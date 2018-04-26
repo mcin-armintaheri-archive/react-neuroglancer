@@ -14,11 +14,23 @@
  * limitations under the License.
  */
 
-import { setupDefaultViewer } from "react-neuroglancer/ui/default_viewer_setup";
+html, body {
+  margin: 0px;
+  padding: 0px;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  background-color: black;
+  color: white;
+}
 
-window.addEventListener("DOMContentLoaded", () => {
-  const viewer = setupDefaultViewer(
-    document.querySelector("#neuroglancer-container")
-  );
-  console.log(viewer);
-});
+body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+#neuroglancer-container {
+  width: 100vw;
+  flex: 1;
+}
