@@ -5,7 +5,7 @@
     "paths": {
       "*": ["*"],
       "neuroglancer/*": ["third_party/neuroglancer/*"],
-      "react-neuroglancer/*": ["src/react-neuroglancer/*"]
+      "lib-neuroglancer/*": ["src/lib-neuroglancer/*"]
     }
   },
   "exclude": [

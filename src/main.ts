@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { setupDefaultViewer } from "react-neuroglancer/ui/default_viewer_setup";
+import { setupDefaultViewer } from 'lib-neuroglancer/ui/default_viewer_setup';
 
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener('DOMContentLoaded', () => {
   const viewer = setupDefaultViewer(
-    document.querySelector("#neuroglancer-container")
+    document.querySelector('#neuroglancer-container')
   );
   console.log(viewer);
 });

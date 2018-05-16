@@ -20,7 +20,7 @@ import {
   bindDefaultPasteHandler
 } from "neuroglancer/ui/default_clipboard_handling";
 import { setDefaultInputEventBindings } from "neuroglancer/ui/default_input_event_bindings";
-import { makeDefaultViewer } from "react-neuroglancer/ui/default_viewer";
+import { makeDefaultViewer } from "lib-neuroglancer/ui/default_viewer";
 import { UrlHashBinding } from "neuroglancer/ui/url_hash_binding";
 import { ViewerOptions } from "neuroglancer/viewer";
 

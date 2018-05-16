@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-'use strict';
+"use strict";
 
-const path = require('path');
-const originalWebpackHelpers = require('neuroglancer/config/webpack_helpers');
-const resolveReal = require('neuroglancer/config/resolve_real');
+const path = require("path");
+const originalWebpackHelpers = require("neuroglancer/config/webpack_helpers");
+const resolveReal = require("neuroglancer/config/resolve_real");
 
 function modifyViewerOptions(options) {
   options = options || {};
@@ -27,19 +27,22 @@ function modifyViewerOptions(options) {
 
     // Allow loader modules to be resolved from node_modules directory of this
     // project in addition to the node_modules directory of neuroglancer.
-    resolveReal(__dirname, '../node_modules')
+    resolveReal(__dirname, "../node_modules")
   ];
 
   // This references the tsconfig.json file of this project, rather than of
   // neuroglancer.
-  options.tsconfigPath = resolveReal(__dirname, '../tsconfig.json');
+  options.tsconfigPath = resolveReal(__dirname, "../tsconfig.json");
 
   // This references the main.ts of this project, rather than of
   // neuroglancer.
-  options.frontendModules = [resolveReal(__dirname, '../src/main.ts')];
+  options.frontendModules = [resolveReal(__dirname, "../src/main_python.ts")];
   return options;
 }
 
 exports.getViewerConfigFromEnv = function(options, env) {
-  return originalWebpackHelpers.getViewerConfigFromEnv(modifyViewerOptions(options), env);
+  return originalWebpackHelpers.getViewerConfigFromEnv(
+    modifyViewerOptions(options),
+    env
+  );
 };
