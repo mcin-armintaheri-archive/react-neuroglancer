@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { matchPythonURL } from 'lib-neuroglancer/util';
-
 import { WithParameters } from 'neuroglancer/chunk_manager/backend';
 import { MeshSourceParameters, SkeletonSourceParameters, VolumeChunkEncoding, VolumeChunkSourceParameters } from 'lib-neuroglancer/datasource/python/base';
 import { decodeTriangleVertexPositionsAndIndices, FragmentChunk, ManifestChunk, MeshSource } from 'neuroglancer/mesh/backend';
@@ -44,8 +42,7 @@ chunkDecoders.set(VolumeChunkEncoding.RAW, decodeRawChunk);
 
   download(chunk: VolumeChunk, cancellationToken: CancellationToken) {
     let {parameters} = this;
-    const { baseURL, hash } = matchPythonURL(parameters.key);
-    let path = `${baseURL}/neuroglancer/${this.encoding}/${hash}/${parameters.scaleKey}`;
+    let path = `${parameters.baseURL}/neuroglancer/${this.encoding}/${parameters.key}/${parameters.scaleKey}`;
     {
       // chunkPosition must not be captured, since it will be invalidated by the next call to
       // computeChunkBounds.
@@ -77,8 +74,7 @@ export function decodeFragmentChunk(chunk: FragmentChunk, response: ArrayBuffer)
 
   downloadFragment(chunk: FragmentChunk, cancellationToken: CancellationToken) {
     let {parameters} = this;
-    const { baseURL, hash } = matchPythonURL(parameters.key);
-    let requestPath = `${baseURL}/neuroglancer/mesh/${hash}/${chunk.manifestChunk!.objectId}`;
+    let requestPath = `${parameters.baseURL}/neuroglancer/mesh/${parameters.key}/${chunk.manifestChunk!.objectId}`;
     return sendHttpRequest(openHttpRequest(requestPath), 'arraybuffer', cancellationToken)
         .then(response => decodeFragmentChunk(chunk, response));
   }
@@ -122,8 +118,7 @@ function decodeSkeletonChunk(
 (WithParameters(SkeletonSource, SkeletonSourceParameters)) {
   download(chunk: SkeletonChunk, cancellationToken: CancellationToken) {
     const {parameters} = this;
-    const { baseURL, hash } = matchPythonURL(parameters.key);
-    let requestPath = `${baseURL}/neuroglancer/skeleton/${hash}/${chunk.objectId}`;
+    let requestPath = `${parameters.baseURL}/neuroglancer/skeleton/${parameters.key}/${chunk.objectId}`;
     return sendHttpRequest(openHttpRequest(requestPath), 'arraybuffer', cancellationToken)
         .then(response => decodeSkeletonChunk(chunk, response, parameters.vertexAttributes));
   }

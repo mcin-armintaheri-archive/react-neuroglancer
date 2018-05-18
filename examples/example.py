@@ -34,13 +34,13 @@ b = np.pad(b, 1, 'constant')
 
 viewer = neuroglancer.Viewer()
 with viewer.txn() as s:
-    s.voxel_size = [10, 10, 10]
+    s.voxel_size = [500000, 500000, 500000]
     s.layers.append(
         name='a',
         layer=neuroglancer.LocalVolume(
             data=a,
             # offset is in nm, not voxels
-            offset=(200, 300, 150),
+            offset=(20000, 30000, 15000),
             voxel_size=s.voxel_size,
         ),
         shader="""
@@ -51,9 +51,17 @@ void main() {
 }
 """)
     s.layers.append(
-        name='b', layer=neuroglancer.LocalVolume(
+        name='b',
+        layer=neuroglancer.LocalVolume(
             data=b,
             voxel_size=s.voxel_size,
         ))
+    s.layers.append(
+        name='big brain',
+        layer=neuroglancer.Layer({
+            'source': 'precomputed://https://neuroglancer.humanbrainproject.org/precomputed/BigBrainRelease.2015/8bit',
+            'type': 'image'
+        })
+    )
 
 print(viewer)

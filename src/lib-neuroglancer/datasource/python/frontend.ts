@@ -19,8 +19,6 @@
  * Support for Python integration.
  */
 
-import { matchPythonURL } from 'lib-neuroglancer/util';
-
 import { ChunkManager, ChunkSource, ChunkSourceConstructor, WithParameters } from 'neuroglancer/chunk_manager/frontend';
 import { DataSource } from 'neuroglancer/datasource';
 import { MeshSourceParameters, PythonSourceParameters, SkeletonSourceParameters, VolumeChunkEncoding, VolumeChunkSourceParameters } from 'lib-neuroglancer/datasource/python/base';
@@ -29,7 +27,7 @@ import { VertexAttributeInfo } from 'neuroglancer/skeleton/base';
 import { SkeletonSource } from 'neuroglancer/skeleton/frontend';
 import { DataType, DEFAULT_MAX_VOXELS_PER_CHUNK_LOG2, getNearIsotropicBlockSize, getTwoDimensionalBlockSize } from 'neuroglancer/sliceview/base';
 import { VolumeChunkSpecification, VolumeSourceOptions, VolumeType } from 'neuroglancer/sliceview/volume/base';
-import {MultiscaleVolumeChunkSource as GenericMultiscaleVolumeChunkSource, VolumeChunkSource } from 'neuroglancer/sliceview/volume/frontend';
+import { MultiscaleVolumeChunkSource as GenericMultiscaleVolumeChunkSource, VolumeChunkSource } from 'neuroglancer/sliceview/volume/frontend';
 import { Borrowed, Owned } from 'neuroglancer/util/disposable';
 import { mat4, vec3 } from 'neuroglancer/util/geom';
 import { openHttpRequest, sendHttpRequest } from 'neuroglancer/util/http_request';
@@ -105,7 +103,7 @@ export class MultiscaleVolumeChunkSource implements GenericMultiscaleVolumeChunk
   skeletonVertexAttributes: Map<string, VertexAttributeInfo>|undefined;
 
   // TODO(jbms): Properly handle reference counting of `dataSource`.
-  constructor(public dataSource: Borrowed<PythonDataSource>, public chunkManager: ChunkManager, public key: string, public response: any) {
+  constructor(public dataSource: Borrowed<PythonDataSource>, public baseURL: string, public chunkManager: ChunkManager, public key: string, public response: any) {
     verifyObject(response);
     this.dataType = verifyObjectProperty(response, 'dataType', x => verifyEnumString(x, DataType));
     this.volumeType =
@@ -201,7 +199,12 @@ export class MultiscaleVolumeChunkSource implements GenericMultiscaleVolumeChunk
         spec,
         dataSource: this.dataSource,
         generation: this.generation,
-        parameters: {key: this.key, scaleKey: scaleInfo.key, encoding: encoding}
+        parameters: {
+          baseURL: this.baseURL,
+          key: this.key,
+          scaleKey: scaleInfo.key,
+          encoding: encoding
+        }
       });
     }));
   }
@@ -213,6 +216,7 @@ export class MultiscaleVolumeChunkSource implements GenericMultiscaleVolumeChunk
         dataSource: this.dataSource,
         generation: this.generation,
         parameters: {
+          baseURL: this.baseURL,
           key: this.key,
           vertexAttributes: skeletonVertexAttributes,
         }
@@ -222,6 +226,7 @@ export class MultiscaleVolumeChunkSource implements GenericMultiscaleVolumeChunk
       dataSource: this.dataSource,
       generation: this.generation,
       parameters: {
+        baseURL: this.baseURL,
         key: this.key,
       }
     });
@@ -253,7 +258,9 @@ function parseSkeletonVertexAttributes(spec: string): Map<string, VertexAttribut
 export class PythonDataSource extends DataSource {
   private sources = new Map<string, Set<PythonChunkSource>>();
   sourceGenerations = new Map<string, number>();
-
+  constructor(public baseURL: string) {
+    super();
+  }
   registerSource(key: string, source: PythonChunkSource) {
     let existingSet = this.sources.get(key);
     if (existingSet === undefined) {
@@ -298,13 +305,12 @@ export class PythonDataSource extends DataSource {
     return 'Python-served volume';
   }
   getVolume(chunkManager: ChunkManager, key: string) {
-    const { baseURL, hash } = matchPythonURL(key);
     return chunkManager.memoize.getUncounted(
-        {'type': 'python:MultiscaleVolumeChunkSource', key: hash},
-      () => sendHttpRequest(openHttpRequest(`${baseURL}/neuroglancer/info/${hash}`), 'json')
-                  .then(
-                      response =>
-                          new MultiscaleVolumeChunkSource(this, chunkManager, key, response)));
+      {'type': 'python:MultiscaleVolumeChunkSource', key},
+      () =>
+        sendHttpRequest(openHttpRequest(`${this.baseURL}/neuroglancer/info/${key}`), 'json')
+          .then(response =>
+            new MultiscaleVolumeChunkSource(this, this.baseURL, chunkManager, key, response)));
   }
   getSkeletonSource(chunkManager: ChunkManager, key: string) {
     const skeletonKeyPattern = /^([^\/?]+)\?(.*)$/;

@@ -42,6 +42,15 @@ import { parseFixedLengthArray, verifyInt } from 'neuroglancer/util/json';
 import { CompoundTrackable, Trackable } from 'neuroglancer/util/trackable';
 import { InputEventBindings } from 'neuroglancer/viewer';
 
+const viewerURL = prompt('Enter remote viewer URL') || '';
+const match = /(.*)\/v\/(.*)\//.exec(viewerURL) || [];
+if (!(match[1] && match[2])) {
+  throw new Error('Invalid remote URL');
+}
+const baseURL = match[1];
+const viewerHash = match[2];
+
+
 function makeTrackableBasedEventActionMaps(
   inputEventBindings: InputEventBindings
 ) {
@@ -108,11 +117,11 @@ window.addEventListener('DOMContentLoaded', () => {
   const credentialsManager = new TrackableBasedCredentialsManager();
   configState.add('credentials', credentialsManager.inputState);
   privateState.add('credentials', credentialsManager.outputState);
-
+  // REGISTER PYTHON DATASOURCE
   const dataSourceProvider = getDefaultDataSourceProvider({
     credentialsManager: new CachingCredentialsManager(credentialsManager)
   });
-  const pythonDataSource = new PythonDataSource();
+  const pythonDataSource = new PythonDataSource(baseURL);
   dataSourceProvider.register('python', pythonDataSource);
   configState.add(
     'sourceGenerations',
@@ -188,7 +197,8 @@ window.addEventListener('DOMContentLoaded', () => {
   };
   updateSize();
   size.changed.add(debounce(() => updateSize(), 0));
-  const socketURL = prompt('enter viewer url') || '';
+  // SOCKJS SETUP
+  const socketURL = `${baseURL}/socket/${viewerHash}`;
   const serverConnection = new ServerConnection(
     sharedState,
     privateState,
@@ -201,7 +211,7 @@ window.addEventListener('DOMContentLoaded', () => {
   screenshotHandler.sendScreenshotRequested.add(state =>
     serverConnection.sendActionNotification('screenshot', state)
   );
-
+  // END SOCKJS SETUP
   bindDefaultCopyHandler(viewer);
   bindDefaultPasteHandler(viewer);
 });

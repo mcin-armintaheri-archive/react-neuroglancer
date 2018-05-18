@@ -7,7 +7,9 @@
     "build-python": "webpack --config ./config/webpack.config.js --display-modules --env=python-dev",
     "build-python-min": "webpack --config ./config/webpack.config.js --display-modules --env=python-min",
     "dev-server": "webpack-dev-server --config ./config/webpack.config.js",
-    "dev-server-python": "webpack-dev-server --config ./config/webpack.config.js --env=python-dev"
+    "dev-server-python": "webpack-dev-server --config ./config/webpack.config.js --env=python-dev",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist/dev"
   },
   "dependencies": {
     "lodash": "^4.17.10",
@@ -17,6 +19,7 @@
   },
   "devDependencies": {
     "@types/lodash": "^4.14.108",
+    "gh-pages": "^1.1.0",
     "tslint-eslint-rules": "^4.1.1",
     "typescript": "2.6.1",
     "webpack-dev-server": "^2.2.0"

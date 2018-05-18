@@ -20,6 +20,20 @@ const path = require("path");
 const originalWebpackHelpers = require("neuroglancer/config/webpack_helpers");
 const resolveReal = require("neuroglancer/config/resolve_real");
 
+function makeModifiedPythonClientOptions(options) {
+  const srcDir = resolveReal(__dirname, "../src");
+  options = Object.assign({}, options);
+  options.extraDataSources = [
+    ...(options.extraDataSources || []),
+    { source: "lib-neuroglancer/datasource/python", register: null }
+  ];
+  options.frontendModules = options.frontendModules || [
+    resolveReal(srcDir, "main_python.ts")
+  ];
+  options.registerCredentials = false;
+  return options;
+}
+
 function modifyViewerOptions(options) {
   options = options || {};
   options.resolveLoaderRoots = [
@@ -34,9 +48,8 @@ function modifyViewerOptions(options) {
   // neuroglancer.
   options.tsconfigPath = resolveReal(__dirname, "../tsconfig.json");
 
-  // This references the main.ts of this project, rather than of
-  // neuroglancer.
-  options.frontendModules = [resolveReal(__dirname, "../src/main_python.ts")];
+  // Build remote-python-source-enabled client
+  options = makeModifiedPythonClientOptions(options);
   return options;
 }
 

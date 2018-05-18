@@ -23,6 +23,7 @@ export enum VolumeChunkEncoding {
 }
 
 export class PythonSourceParameters {
+  baseURL: string;
   key: string;
 }
 
